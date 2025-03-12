@@ -1,6 +1,6 @@
 # Lazy-Deep-Research
 
-An opensource deep research agent framework using lazyllm
+An opensource deep research agent framework using lazyllm(https://github.com/LazyAGI/LazyLLM)
 
 ## Current Func
 
