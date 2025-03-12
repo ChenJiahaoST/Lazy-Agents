@@ -34,6 +34,9 @@ An opensource deep research agent framework using lazyllm
 
   ![1741763032873](images/README/1741763032873.png)
 
+## Attention!!!
+Friendly reminder: Running the deep research process consumes a significant amount of token quota, take care :)
+
 ## TODO List
 
 1. web operation
