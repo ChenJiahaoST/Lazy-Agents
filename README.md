@@ -23,6 +23,17 @@ An opensource deep research agent framework using lazyllm
 2. set google search api key and search engine id in .env
 3. run python -m core.main
 
+### example
+
+- give a query "介绍一下lazyllm"， plan agent asked user for more information, then search some information from websites, finally give a outline.
+
+![1741762831849](images/README/1741762831849.png)
+
+- then search agents search every part of outline and give summary information.![1741762918270](images/README/1741762918270.png)
+- finally, use llm to write long report
+
+  ![1741763032873](images/README/1741763032873.png)
+
 ## TODO List
 
 1. web operation
