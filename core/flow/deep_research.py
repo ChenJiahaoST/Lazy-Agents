@@ -4,12 +4,9 @@ import lazyllm
 from lazyllm import OnlineChatModule, Color
 from lazyllm.tools.agent.functionCall import StreamResponse
 
-from core.prompt.planner_prompt import TOC_PLAN_INSTRUCTION
 from core.prompt.write_prompt import REPORT_INSTRUCTION
-from core.tools import web_search, visit_url, get_more_info_from_user
-from core.tools.utils import table_of_content_parser
-from core.agent.agent import CustomReactAgent
-from core.agent.searcher_agent import create_search_agent_and_run
+from core.tools import web_search, visit_url, get_more_info_from_user, table_of_content_parser
+from core.agent import create_plan_agent, create_search_agent_and_run
 
 
 def create_deep_research_pipeline():
@@ -20,14 +17,7 @@ def create_deep_research_pipeline():
     
     with lazyllm.pipeline() as dr_ppl:
         dr_ppl.planner_ins = StreamResponse(prefix="[Planner] Receive instruction:", prefix_color=Color.red, color=Color.magenta, stream=True)
-        dr_ppl.planner = CustomReactAgent(
-            llm=OnlineChatModule(source="qwen", model="qwen-plus", stream=False),
-            tools=["get_more_info_from_user", "web_search", "visit_url"],
-            custom_prompt=TOC_PLAN_INSTRUCTION,
-            max_retries=10,
-            return_trace=True,
-            stream=True
-        )
+        dr_ppl.planner = create_plan_agent()
         dr_ppl.planner_out = StreamResponse(prefix="[Planner] ToC Completed:", prefix_color=Color.red, color=Color.magenta, stream=True)
         dr_ppl.toc_parser = table_of_content_parser
         dr_ppl.searcher = lazyllm.warp(lambda x: s_ppl(x)).aslist

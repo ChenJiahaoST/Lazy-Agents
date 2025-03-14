@@ -12,10 +12,7 @@ def create_plan_agent() -> CustomReactAgent:
         tools=["get_more_info_from_user", "web_search", "visit_url"],
         custom_prompt=TOC_PLAN_INSTRUCTION,
         max_retries=10,
-        return_trace=True
+        return_trace=True,
+        stream=True
     )
     return agent
-
-def test():
-    plan_agent = create_plan_agent()
-    print(plan_agent("1"))

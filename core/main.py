@@ -10,10 +10,8 @@ from core.flow.deep_research import create_deep_research_pipeline
 async def main():
     deep_research_ppl = create_deep_research_pipeline()
     question = input("Lazy Deep Research Demo...\nPlease enter your question：\n")
-    if lazyllm.FileSystemQueue().size() > 0:
-        lazyllm.FileSystemQueue().clear()
-    lazyllm.globals._init_sid()
     all_process = ""
+    lazyllm.globals._init_sid()
     with lazyllm.ThreadPoolExecutor(1) as executor:
         future = executor.submit(deep_research_ppl, question)
         while True:
@@ -24,7 +22,7 @@ async def main():
                 break
             else:
                 await asyncio.sleep(0.3)
-        log_filename = "all_process.log"
+        log_filename = f"{question}_all_process.log"
         with open(log_filename, "w", encoding="utf-8") as f:
             f.write(all_process)
         print(f"结果已保存至 {log_filename}")

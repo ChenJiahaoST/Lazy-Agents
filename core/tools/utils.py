@@ -16,6 +16,9 @@ def get_today_date():
 
 
 def table_of_content_parser(text: str) -> list:
+    """
+    提取完整目录
+    """
     try:
         # 找到第一个 '[' 和最后一个 ']' 的索引
         start_index = text.rfind('[')
