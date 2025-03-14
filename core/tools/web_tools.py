@@ -9,70 +9,63 @@ load_dotenv()
 
 search_engine = GoogleSearch(os.getenv('GOOGLE_SEARCH_API_KEY'), os.getenv('GOOGLE_SEARCH_CX'))
 
-
 @fc_register("tool")
 def web_search(query: str) -> str:
     """
-    使用google search搜索与query最相关的网页，搜索结果将返回一个json格式的列表，包含每个搜索结果的标题、简介和链接。
+    使用google search搜索与query相关的网页，搜索结果包含每个搜索结果的标题、简介和链接。
 
     Args:
         query (str): The search query string.
     """
     LOG.info(f"[tool - Web Search] Searching the web for query '{query}'...")
-    # search_engine = GoogleSearch(GOOGLE_SEARCH_API_KEY, GOOGLE_SEARCH_CX)
     response = search_engine(query=query, date_restrict='m1')
     if response.get('status_code') != 200:
         return f"Error: Received status code {response.status_code}"
     search_res = json.loads(response.get('content'))
-    results = []
+    res_str = ""
+    cnt = 0
     for item in search_res.get('items'):
+        if cnt >= 5:
+            break
         link = item.get("link")
         title = item.get("title")
         snippet = item.get("snippet")
-        results.append({"title": title, "snippet":snippet, "url": link})
-    return json.dumps(results, ensure_ascii=False)
+        res_str += f"Title: {title}\nSnippet: {snippet[:50]}...\nURL: {link}\n\n"
+        cnt += 1
+    return res_str
 
 
 @fc_register("tool")
-def visit_url(url: str) -> str:
+def visit_url(url: str, encoding: str = None) -> str:
     """
-    使用这个工具来浏览一个网页的详细内容。记住，当你搜索到一些相关网站时，不要只满足于网站的简介，一定要使用这个工具浏览相关网站的详细内容。
+    使用这个工具来浏览一个网页的详细内容，并返回解析后的文本内容。
 
     Args:
         url (str): The URL of the webpage to visit.
+        encoding (str, optional): The encoding of the webpage. If not specified, the encoding will be automatically detected.
     """
     import requests
     from bs4 import BeautifulSoup
-    LOG.info(f"[tool - Visit URL] Visiting URL '{url}'...")
+    from readability import Document
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; my-bot/1.0)"
+    }
+
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10)
     except Exception as e:
         return f"Error: Failed to fetch URL. Exception: {e}"
 
     if response.status_code != 200:
         return f"Error: Received status code {response.status_code}"
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    if encoding:
+        response.encoding = encoding
+    else:
+        response.encoding = response.apparent_encoding or response.encoding
 
-    main_tag = soup.find("main")
-    if main_tag:
-        text = main_tag.get_text(separator="\n", strip=True)
-        if text:
-            return text
+    doc = Document(response.text)
+    main_content = doc.summary()
+    main_text = BeautifulSoup(main_content, "html.parser").get_text(separator="\n", strip=True)
 
-    article_tag = soup.find("article")
-    if article_tag:
-        text = article_tag.get_text(separator="\n", strip=True)
-        if text:
-            return text
-
-    body = soup.find("body")
-    if body:
-        for element in body(["script", "style"]):
-            element.decompose()
-        text = body.get_text(separator="\n", strip=True)
-        if text:
-            return text
-
-    text = soup.get_text(separator="\n", strip=True)
-    return text
+    return main_text if main_text else "Error: Failed to extract main content."

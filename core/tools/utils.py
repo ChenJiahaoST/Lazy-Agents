@@ -16,9 +16,12 @@ def get_today_date():
 
 
 def table_of_content_parser(text: str) -> list:
+    """
+    提取完整目录
+    """
     try:
         # 找到第一个 '[' 和最后一个 ']' 的索引
-        start_index = text.find('[')
+        start_index = text.rfind('[')
         end_index = text.rfind(']')
         if start_index == -1 or end_index == -1:
             # 没有找到有效的 JSON 结构，返回空列表

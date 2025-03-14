@@ -1,4 +1,4 @@
-from core.tools.utils import get_today_date
+from core.tools import get_today_date
 
 
 WEB_SEARCH_INSTRUCTION = f"""# 定位

@@ -1,3 +1,5 @@
 lazyllm==0.4.1
 beautifulsoup4
 python-dotenv
+lxml_html_clean==0.4.1
+readability-lxml==0.8.1
