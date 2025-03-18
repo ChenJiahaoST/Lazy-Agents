@@ -14,10 +14,10 @@ async def main():
     lazyllm.globals._init_sid()
     with lazyllm.ThreadPoolExecutor(1) as executor:
         agent = Manus(
-            plan_llm=OnlineChatModule(source="qwen", model="qwen-plus", stream=True),
+            plan_llm=OnlineChatModule(source="qwen", model="qwen-plus", stream=False),
             solve_llm=OnlineChatModule(source="qwen", model="qwen-plus", stream=False),
             return_trace=True,
-            stream=True,
+            stream=False,
             max_retries=10
         )
         future = executor.submit(agent, question)

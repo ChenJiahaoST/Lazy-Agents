@@ -9,7 +9,8 @@ from typing import List
 
 from lazyllm.tools.agent import PlanAndSolveAgent
 from lazyllm.module import ModuleBase
-from lazyllm import loop, pipeline, _0, package, bind, LOG, Color, ChatPrompter, OnlineChatModule
+from lazyllm import loop, pipeline, _0, package, bind, LOG, Color, ChatPrompter
+from lazyllm.tools.agent.functionCall import StreamResponse
 
 from core.tools import (
     json_list_parser,
@@ -40,7 +41,9 @@ class Manus(PlanAndSolveAgent):
         
     def _build_agent_ppl(self):
         with pipeline() as self._agent:
+            self._agent.plan_ins = StreamResponse(prefix="[Planner 🤔] Receive instruction:", prefix_color=Color.yellow, color=Color.magenta, stream=True)
             self._agent.plan = self._plan_llm
+            self._agent.plan_out = StreamResponse(prefix="[Planner 🤔] Todo List created:", prefix_color=Color.yellow, color=Color.magenta, stream=True)
             self._agent.parse = lambda text: package('', json_list_parser(text))
             with loop(stop_condition=lambda res, steps: len(steps) == 0) as self._agent.lp:
                 self._agent.lp.pre_action = self._pre_action
@@ -51,15 +54,20 @@ class Manus(PlanAndSolveAgent):
 
     def _pre_action(self, response: str, steps: list):
         query = f"步骤{steps[0]['id']}：{steps[0]['task']}\n具体要求：{steps[0]['desc']}\n"
-        LOG.info(f"[Solver] begin\n{query}")
+        total_round = len(self.memory) + len(steps) - 1 
+        StreamResponse(prefix="[Solver 👨‍💻]", prefix_color=Color.green, color=Color.magenta, stream=True)(
+            f"This is 🎯step-{steps[0]['id']}/{total_round}\nTarget: {steps[0]['task']}\n"
+        )
         history = "\n----------\n".join(self.memory[1:]) if len(self.memory) > 1 else "当前没有已完成的步骤"
-
         result = self.SOLVE_INPUT_PROMPT.format(objective=self.memory[0], previous_steps=history, current_step=query)
         return result
 
     def _post_action(self, response: str, steps: List[str]):
         last_step = f"步骤{steps[0]['id']}：{steps[0]['task']}\n完成情况：{response}\n"
-        LOG.info(f"[Solver] response\n{last_step}")
+        total_round = len(self.memory) + len(steps) - 1
+        StreamResponse(prefix="[Solver 👨‍💻]", prefix_color=Color.green, color=Color.magenta, stream=True)(
+            f"🎯step-{steps[0]['id']}/{total_round} Completed!\nResult: {response}\n"
+        )
         self.memory.append(last_step)
         steps.pop(0)
         return package(response, steps)
@@ -77,10 +85,3 @@ class Manus(PlanAndSolveAgent):
     def forward(self, query: str):
         self.memory.append(query)
         return self._agent(query)
-
-# plan_llm = OnlineChatModule(source="qwen", model="qwen-plus", stream=False)
-# solve_llm = OnlineChatModule(source="qwen", model="qwen-plus", stream=False)
-# tools = ["web_search", "visit_url", "file_manager", "python_executor"]
-# manus = Manus(plan_llm, solve_llm, max_retries=10, stream=True)
-
-# manus("调研一下如何用蒸馏技术训练LLM，并做一个ppt")
