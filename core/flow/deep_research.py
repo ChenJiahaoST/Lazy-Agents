@@ -5,7 +5,7 @@ from lazyllm import OnlineChatModule, Color
 from lazyllm.tools.agent.functionCall import StreamResponse
 
 from core.prompt.write_prompt import REPORT_INSTRUCTION
-from core.tools import web_search, visit_url, get_more_info_from_user, table_of_content_parser
+from core.tools import web_search, visit_url, get_more_info_from_user, json_list_parser
 from core.agent import create_plan_agent, create_search_agent_and_run
 
 
@@ -19,7 +19,7 @@ def create_deep_research_pipeline():
         dr_ppl.planner_ins = StreamResponse(prefix="[Planner] Receive instruction:", prefix_color=Color.red, color=Color.magenta, stream=True)
         dr_ppl.planner = create_plan_agent()
         dr_ppl.planner_out = StreamResponse(prefix="[Planner] ToC Completed:", prefix_color=Color.red, color=Color.magenta, stream=True)
-        dr_ppl.toc_parser = table_of_content_parser
+        dr_ppl.toc_parser = json_list_parser
         dr_ppl.searcher = lazyllm.warp(lambda x: s_ppl(x)).aslist
         dr_ppl.search_parser = lambda x: json.dumps(
             [
