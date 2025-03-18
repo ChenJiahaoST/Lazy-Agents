@@ -21,7 +21,7 @@ An opensource deep research agent framework using lazyllm(https://github.com/Laz
 
 1. set qwen api key "export LAZYLLM_QWEN_API_KEY=xxx"
 2. set google search api key and search engine id in .env
-3. run python -m core.main
+3. run python -m main
 
 ### example
 

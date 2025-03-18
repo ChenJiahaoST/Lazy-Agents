@@ -15,7 +15,7 @@ def get_today_date():
     return today.strftime("%Y-%m-%d")
 
 
-def table_of_content_parser(text: str) -> list:
+def json_list_parser(text: str) -> list:
     """
     提取完整目录
     """
@@ -29,7 +29,6 @@ def table_of_content_parser(text: str) -> list:
         json_str = text[start_index:end_index+1]
         # 尝试解析 JSON
         data = json.loads(json_str)
-        LOG.info(f"报告写作大纲生成成功：\n{data}")
         return data
     except Exception as e:
         # 如果解析出错，输出错误信息并返回空列表
